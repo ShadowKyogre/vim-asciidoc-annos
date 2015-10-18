@@ -1,6 +1,8 @@
 Vim Asciidoc Annotations
 ========================
 
+[![asciicast](https://asciinema.org/a/28268.png)](https://asciinema.org/a/28268?autoplay=1&t=15)
+
 A simple plugin to make adding random annotations as internal 
 references stored in a separate file. I made this since solutions
 like vim-notebook aren't geared towards handling multiple line
