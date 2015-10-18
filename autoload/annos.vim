@@ -97,12 +97,12 @@ function! annos#CreateAnno(id)
 	let lastline = getpos("$")[1]
 	if lastline == 1
 		let isempty = empty(getline(1))
-		call append(0, ['[[' . a:id . ']]' , '--', 'Fill me in', '--'])
+		call append(0, ['[[' . a:id . ']]' , '****', 'Fill me in', '', '****'])
 		if isempty
 			normal! Gdd
 		endif
 	else
-		call append(lastline, ['', '[[' . a:id . ']]', '--' , 'Fill me in', '--'])
+		call append(lastline, ['', '[[' . a:id . ']]', '****' , 'Fill me in', '', '****'])
 	endif
 endfunction
 
@@ -117,10 +117,36 @@ function! annos#GoToAnnoContext(id)
 endfunction
 
 function! annos#GoToCurrentAnno()
-	let id = expand('<cWORD>')
-	if id =~ '<<anno-[a-f0-9]\{9\},'
-		call annos#GoToAnno(id[2:-2])
+	"let id = expand('<cWORD>')
+	let anno_start = searchpos('<<anno-[a-f0-9]\{9\}', 'bcnW')
+	let curpos = getpos('.')[1:2]
+	let anno_end = searchpos('>>', 'cnW')
+	let prev_anno_end = searchpos('>>', 'bcnW')
+
+	if anno_start != [0, 0] && anno_end != [0, 0]
+		let in_or_beyond_start = (anno_start == curpos) 
+		\ || (anno_start[0] < curpos[0])
+		\ || (anno_start[0] == curpos[0] && anno_start[1] <= curpos[1])
+		let in_or_before_end = (anno_end == curpos) 
+		\ || (anno_end[0] > curpos[0])
+		\ || (anno_end[0] == curpos[0] && anno_end[1] >= curpos[1])
+
+		if prev_anno_end != [0, 0]
+			let false_alarm = (anno_start[0] == prev_anno_end[0] 
+			\ && prev_anno_end[1] > anno_start[1])
+			\ || prev_anno_end[0] > anno_start[0]
+		else
+			let false_alarm = 0
+		endif
+
+		if in_or_beyond_start && in_or_before_end && !false_alarm
+			call annos#GoToAnno(getline(anno_start[0])[anno_start[1]+1:anno_start[1]+14])
+		endif
 	endif
+
+	"if id =~ '<<anno-[a-f0-9]\{9\},'
+	"	call annos#GoToAnno(id[2:-2])
+	"endif
 endfunction
 
 function! annos#GoToCurrentAnnoContext()
